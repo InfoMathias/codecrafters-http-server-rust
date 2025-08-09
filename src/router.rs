@@ -97,26 +97,22 @@ impl Router {
     fn parse_routing_args(stream: &TcpStream) -> (String, String, HashMap<String, String>) {
         let buf_reader = BufReader::new(stream);
 
-        // Collect request lines until a blank line
         let http_request: Vec<String> = buf_reader
             .lines()
             .map(|result| result.unwrap_or_default())
             .take_while(|line| !line.is_empty())
             .collect();
 
-        // If no request line, return empty tuple
         if http_request.is_empty() {
             return (String::new(), String::new(), HashMap::new());
         }
 
-        // --- Parse the request line ---
         let mut parts = http_request[0].split_whitespace();
         let method = parts.next().unwrap_or_default().to_string();
         let path = parts.next().unwrap_or_default().to_string();
 
-        // --- Parse headers ---
         let mut headers_map = HashMap::new();
-        for line in http_request.iter().skip(1) { // skip the request line
+        for line in http_request.iter().skip(1) { 
             if let Some((key, value)) = line.split_once(':') {
                 headers_map.insert(key.trim().to_lowercase(), value.trim().to_string());
             }

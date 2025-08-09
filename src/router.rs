@@ -27,8 +27,8 @@ impl Router {
 
     pub fn respond(&self, mut stream: &TcpStream) {
 
-        let (method, path) = Self::parse_routing_args(&stream);
-        let (status, body) = self.handle(&path, &method); 
+        let (method, path, headers) = Self::parse_routing_args(&stream);
+        let (status, body) = self.handle(&path, &method, &headers); 
         
         let response = format!("HTTP/1.1 {} {}", status.to_string(), body);
 
@@ -37,24 +37,38 @@ impl Router {
         stream.write_all(response.as_bytes()).unwrap();
     }
 
-    pub fn handle(&self, path: &str, method: &str) -> (String, String) {
+    pub fn handle(
+        &self, 
+        path: &str, 
+        method: &str,
+        headers: &HashMap<String, String>
+    ) -> (u16, String) {
+
         println!("{} {}", method, path);
 
         for (route_path, methods_map) in &self.routes {
-            if let Some(params) = Self::match_path(route_path, path) {
+            if let Some(mut params) = Self::match_path(route_path, path) {
+
+                for (k, v) in headers {
+                    params.insert(k.clone(), v.clone());
+                }
+
+                println!("{:?}", headers);
+                println!("{:?}", params);
+
                 if let Some(handler) = methods_map.get(method) {
-                    return ("200".to_string(), format!("OK{}", handler(&params)));
+                    return (200, format!("OK{}", handler(&params)));
                 } else {
                     let allowed: Vec<String> = methods_map.keys().cloned().collect();
                     return (
-                        "405".to_string(),
+                        405,
                         format!("Method Not Allowed\nAllow: {}", allowed.join(", ")),
                     );
                 }
             }
         }
 
-        ("404".to_string(), "Not Found\r\n\r\n".to_string())
+        (404, "Not Found\r\n\r\n".to_string())
     }
 
     fn match_path(route: &str, actual: &str) -> Option<HashMap<String, String>> {
@@ -80,25 +94,34 @@ impl Router {
         Some(params)
     }
 
-    fn parse_routing_args(stream: &TcpStream) -> (String, String) {
+    fn parse_routing_args(stream: &TcpStream) -> (String, String, HashMap<String, String>) {
         let buf_reader = BufReader::new(stream);
 
-        let http_request: Vec<_> = buf_reader
+        // Collect request lines until a blank line
+        let http_request: Vec<String> = buf_reader
             .lines()
             .map(|result| result.unwrap_or_default())
             .take_while(|line| !line.is_empty())
             .collect();
 
-        http_request
-            .get(0)
-            .filter(|line| !line.is_empty())
-            .map(|line| {
-                let mut parts = line.split_whitespace();
-                (
-                    parts.next().unwrap_or_default().to_string(),  // Method
-                    parts.next().unwrap_or_default().to_string(),  // Path
-                )
-            })
-            .unwrap_or_else(|| (String::new(), String::new()))
+        // If no request line, return empty tuple
+        if http_request.is_empty() {
+            return (String::new(), String::new(), HashMap::new());
+        }
+
+        // --- Parse the request line ---
+        let mut parts = http_request[0].split_whitespace();
+        let method = parts.next().unwrap_or_default().to_string();
+        let path = parts.next().unwrap_or_default().to_string();
+
+        // --- Parse headers ---
+        let mut headers_map = HashMap::new();
+        for line in http_request.iter().skip(1) { // skip the request line
+            if let Some((key, value)) = line.split_once(':') {
+                headers_map.insert(key.trim().to_lowercase(), value.trim().to_string());
+            }
+        }
+
+        (method, path, headers_map)
     }
 }

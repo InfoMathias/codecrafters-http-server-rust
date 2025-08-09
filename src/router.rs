@@ -30,7 +30,7 @@ impl Router {
         let (method, path) = Self::parse_routing_args(&stream);
         let (status, body) = self.handle(&path, &method); 
         
-        let response = format!("HTTP/1.1 {}{}", status.to_string(), body);
+        let response = format!("HTTP/1.1 {} {}", status.to_string(), body);
 
         println!("{}", response);
 
@@ -43,7 +43,7 @@ impl Router {
         for (route_path, methods_map) in &self.routes {
             if let Some(params) = Self::match_path(route_path, path) {
                 if let Some(handler) = methods_map.get(method) {
-                    return ("200 OK".to_string(), handler(&params));
+                    return ("200".to_string(), handler(&params));
                 } else {
                     let allowed: Vec<String> = methods_map.keys().cloned().collect();
                     return (

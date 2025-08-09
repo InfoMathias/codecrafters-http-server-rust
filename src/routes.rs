@@ -24,7 +24,7 @@ fn echo(val: &str) -> String {
     println!("{}", val);
 
     format!(
-        "\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
+        "OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
         val.len(),
         val
     )

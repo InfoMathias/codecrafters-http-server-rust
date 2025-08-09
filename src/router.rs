@@ -43,7 +43,7 @@ impl Router {
         for (route_path, methods_map) in &self.routes {
             if let Some(params) = Self::match_path(route_path, path) {
                 if let Some(handler) = methods_map.get(method) {
-                    return ("200".to_string(), format!("OK{}", handler(&params));
+                    return ("200".to_string(), format!("OK{}", handler(&params)));
                 } else {
                     let allowed: Vec<String> = methods_map.keys().cloned().collect();
                     return (

@@ -4,7 +4,7 @@ use std::{
     collections::{HashMap},
 };
 
-type Handler = Box<dyn Fn(&HashMap<String, String>) -> String>;
+type Handler = Box<dyn Fn(&HashMap<String, String>) -> String + Send + Sync>;
 
 pub struct Router {
     routes: HashMap<String, HashMap<String, Handler>>,

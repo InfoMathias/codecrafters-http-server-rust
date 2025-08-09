@@ -54,7 +54,7 @@ impl Router {
             }
         }
 
-        ("404".to_string(), "Not Found".to_string())
+        ("404".to_string(), "Not Found\r\n\r\n".to_string())
     }
 
     fn match_path(route: &str, actual: &str) -> Option<HashMap<String, String>> {

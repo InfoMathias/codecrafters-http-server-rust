@@ -30,7 +30,7 @@ impl Router {
         let (method, path) = Self::parse_routing_args(&stream);
         let (status, body) = self.handle(&path, &method); 
         
-        let response = format!("HTTP/1.1 {} {}", status.to_string(), body);
+        let response = format!("HTTP/1.1 {}{}", status.to_string(), body);
 
         println!("{}", response);
 

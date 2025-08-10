@@ -1,5 +1,6 @@
 use std::collections::HashMap;
-use std::fs;
+use std::fs::{self, File};
+use std::io::Write;
 use std::path::Path;
 
 use crate::Router;
@@ -39,6 +40,18 @@ pub fn build_routes(router: &mut Router) {
             let file_name = params.get("filename").unwrap_or(&binding);
             let directory = params.get("directory").unwrap_or(&binding);
             send_file_content(file_name, directory)
+        })
+    );
+
+    router.add_route(
+        "files/:filename",
+        "POST",
+        Box::new(|params: &HashMap<String, String>| {
+            let binding = "".to_string();
+            let file_name = params.get("filename").unwrap_or(&binding);
+            let directory = params.get("directory").unwrap_or(&binding);
+            let file_content = params.get("body").unwrap_or(&binding);
+            create_file(file_name, directory, file_content)
         })
     );
 }
@@ -89,3 +102,31 @@ fn send_file_content(file_name: &str, directory: &str) -> (u16, String) {
         ) 
     )
 }
+
+fn create_file(file_name: &str, directory: &str, file_content: &str) -> (u16, String) {
+    println!("{}", file_name);
+    println!("{}", directory);
+    println!("{}", file_content);
+
+    if let Err(e) = fs::create_dir_all(directory) {
+        return (500, format!("Failed to create directory: {}", e));
+    }
+
+    let file_path = Path::new(directory).join(file_name);
+
+    let mut file = match File::create(file_path) {
+        Ok(f) => f,
+        Err(e) => return (500, format!("Failed to create file: {}", e)),
+    };
+
+    if let Err(e) = file.write_all(file_content.as_bytes()) {
+        return (500, format!("Failed to write to file: {}", e));
+    }
+    
+    (
+        201, 
+        "Created\r\n\r\n".to_string()
+    )
+}
+
+

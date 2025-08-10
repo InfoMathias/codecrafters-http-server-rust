@@ -28,15 +28,22 @@ impl Router {
     pub fn respond(&self, mut stream: &TcpStream, directory: &str) -> bool {
 
         let (method, path, headers, body) = Self::parse_routing_args(&stream);
-        let (status, body) = self.handle(&path, &method, &headers, &directory, &body); 
+        let (status, body) = self.handle(&path, &method, &headers, &directory, &body);
+
         
+        let keep_alive = match headers.get("connection") {
+            Some(val) if val.eq_ignore_ascii_case("close") => false,
+            _ => true,
+        };
+
+            
         let response = format!("HTTP/1.1 {} {}", status.to_string(), body);
 
         println!("{}", response);
 
         stream.write_all(response.as_bytes()).unwrap();
 
-        true
+        keep_alive
     }
 
     pub fn handle(

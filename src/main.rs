@@ -44,7 +44,13 @@ fn main() {
             match stream {
                 Ok(stream) => {
                     println!("accepted new connection");
-                    router.respond(&stream, &directory);
+
+                    loop {
+                        let keep_alive = router.respond(&stream, &directory);
+                        if !keep_alive {
+                            break;
+                        }
+                    }
                 }
                 Err(e) => {
                     println!("error: {}", e);

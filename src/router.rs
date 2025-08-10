@@ -25,7 +25,7 @@ impl Router {
                 .insert(method.to_string(), Box::new(handler));
     }
 
-    pub fn respond(&self, mut stream: &TcpStream, directory: &str) {
+    pub fn respond(&self, mut stream: &TcpStream, directory: &str) -> bool {
 
         let (method, path, headers, body) = Self::parse_routing_args(&stream);
         let (status, body) = self.handle(&path, &method, &headers, &directory, &body); 
@@ -35,6 +35,8 @@ impl Router {
         println!("{}", response);
 
         stream.write_all(response.as_bytes()).unwrap();
+
+        true
     }
 
     pub fn handle(

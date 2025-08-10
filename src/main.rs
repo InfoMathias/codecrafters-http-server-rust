@@ -1,4 +1,5 @@
 #[allow(unused_imports)]
+ 
 use std::{
     net::{TcpListener, TcpStream},
     sync::Arc,
@@ -10,22 +11,40 @@ mod router;
 use crate::router::Router;
 
 fn main() {
+    
+    
+    let args: Vec<String> = std::env::args().collect();
+    let mut directory = String::new();
+
+    let mut i = 0;
+    while i < args.len() {
+        if args[i] == "--directory" {
+            if i + 1 < args.len() {
+                directory = args[i + 1].clone();
+            }
+        }
+        i += 1;
+    }
+
+    println!("{}", directory);
+
     let mut router = Router::new();
     routes::build_routes(&mut router);
 
-    // Share router safely across threads
     let router = Arc::new(router);
+    let directory = Arc::new(directory);
 
     let listener = TcpListener::bind("127.0.0.1:4221").unwrap();
 
     for stream in listener.incoming() {
-        let router = Arc::clone(&router); // clone Arc for this thread
+        let router = Arc::clone(&router);
+        let directory = Arc::clone(&directory);
 
         thread::spawn(move || {
             match stream {
                 Ok(stream) => {
                     println!("accepted new connection");
-                    router.respond(&stream);
+                    router.respond(&stream, &directory);
                 }
                 Err(e) => {
                     println!("error: {}", e);

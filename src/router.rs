@@ -4,7 +4,7 @@ use std::{
     collections::{HashMap},
 };
 
-type Handler = Box<dyn Fn(&HashMap<String, String>) -> String + Send + Sync>;
+type Handler = Box<dyn Fn(&HashMap<String, String>) -> (u16, String) + Send + Sync>;
 
 pub struct Router {
     routes: HashMap<String, HashMap<String, Handler>>,
@@ -25,10 +25,10 @@ impl Router {
                 .insert(method.to_string(), Box::new(handler));
     }
 
-    pub fn respond(&self, mut stream: &TcpStream) {
+    pub fn respond(&self, mut stream: &TcpStream, directory: &str) {
 
         let (method, path, headers) = Self::parse_routing_args(&stream);
-        let (status, body) = self.handle(&path, &method, &headers); 
+        let (status, body) = self.handle(&path, &method, &headers, &directory); 
         
         let response = format!("HTTP/1.1 {} {}", status.to_string(), body);
 
@@ -41,7 +41,8 @@ impl Router {
         &self, 
         path: &str, 
         method: &str,
-        headers: &HashMap<String, String>
+        headers: &HashMap<String, String>,
+        directory: &str,
     ) -> (u16, String) {
 
         println!("{} {}", method, path);
@@ -53,11 +54,18 @@ impl Router {
                     params.insert(k.clone(), v.clone());
                 }
 
+                if !directory.trim().is_empty() {
+                    params.insert("directory".to_string(), directory.to_string());
+                }
+
                 println!("{:?}", headers);
                 println!("{:?}", params);
 
                 if let Some(handler) = methods_map.get(method) {
-                    return (200, format!("OK{}", handler(&params)));
+                    
+                    let (code, message) = handler(&params);
+
+                    return (code, format!("{}", message));
                 } else {
                     let allowed: Vec<String> = methods_map.keys().cloned().collect();
                     return (

@@ -36,7 +36,7 @@ impl Router {
             _ => true,
         };
 
-        let response_headers = if keep_alive { "keep-alive" } else { "close" }
+        let response_headers = format!( "Connection:{}", if keep_alive { "keep-alive" } else { "close" } );
 
         let response = format!("HTTP/1.1 {} {}", status.to_string(), body);
 

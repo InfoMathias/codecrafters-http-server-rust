@@ -36,10 +36,13 @@ impl Router {
             _ => true,
         };
 
-        println!("keep alive : {}", keep_alive.to_string());
-
-            
-        let response = format!("HTTP/1.1 {} {}", status.to_string(), body);
+        let response = format!(
+            "HTTP/1.1 {}\r\nContent-Length: {}\r\nConnection: {}\r\n\r\n{}",
+            status,
+            body.len(),
+            if keep_alive { "keep-alive" } else { "close" },
+            body
+        );
 
         println!("{}", response);
 

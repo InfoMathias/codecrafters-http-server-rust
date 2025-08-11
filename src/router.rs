@@ -36,12 +36,15 @@ impl Router {
             _ => true,
         };
 
-        let response_headers = format!( "Connection:{}", if keep_alive { "keep-alive" } else { "close" } );
+        let response_headers = format!( "\r\nConnection: {}", if keep_alive { "keep-alive" } else { "close" } );
 
-        let response = format!("HTTP/1.1 {} {}", status.to_string(), body);
+        let mut response = format!("HTTP/1.1 {} {}", status.to_string(), body);
 
-        response.insert_str(response.find('\n').unwrap_or(response.len()), &headers_str);
+        println!("{}", response);
 
+        if let Some(pos) = response.find("\r\n\r\n") {
+            response.insert_str(pos, &response_headers);
+        }
         println!("{}", response);
 
         stream.write_all(response.as_bytes()).unwrap();

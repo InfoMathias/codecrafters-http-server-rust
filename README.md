@@ -14,7 +14,7 @@ The goal was to start from a bare TCP socket and gradually build a fully functio
 - **Concurrent Connections** – Handles multiple clients at once using threads.
 - **Static File Serving** – Returns files from disk with correct headers.
 - **Request Body Parsing** – Reads POST/PUT bodies for dynamic handling.
-- **HTTP Compression** – Supports gzip and multiple compression schemes.
+<!--- - **HTTP Compression** – Supports gzip and multiple compression schemes. --->
 - **Persistent Connections** – Keeps TCP connections open for multiple requests.
 - **Graceful Connection Closure** – Cleans up resources properly after use.
 

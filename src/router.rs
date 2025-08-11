@@ -36,6 +36,8 @@ impl Router {
             _ => true,
         };
 
+        println!("keep alive : {}", keep_alive.to_string());
+
             
         let response = format!("HTTP/1.1 {} {}", status.to_string(), body);
 

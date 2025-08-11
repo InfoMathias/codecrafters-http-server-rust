@@ -20,6 +20,42 @@ The goal was to start from a bare TCP socket and gradually build a fully functio
 
 ---
 
+## Available Routes
+
+| Method | Path | Description |
+|--------|------|-------------|
+| **GET** | `/` | Returns `200 OK` with no body. |
+| **GET** | `/echo/:str` | Echoes back `:str` in the response body with `Content-Type: text/plain`. |
+| **GET** | `/user-agent` | Returns the `User-Agent` header value in plain text. |
+| **GET** | `/files/:filename` | Returns the contents of `:filename` from the given `--directory` path. |
+| **POST** | `/files/:filename` | Creates or overwrites `:filename` in the given `--directory` with the request body. |
+
+> **Note:** For file routes (`/files/...`), you **must** provide a directory at launch:
+>
+> ```sh
+> ./your_program.sh --directory /path/to/files
+> ```
+> The `--directory` flag tells the server where to read and write files.
+
+---
+
+## Example Usage
+
+# 1. Echo back text
+curl http://localhost:4221/echo/hello
+
+# 2. Read the User-Agent header
+curl http://localhost:4221/user-agent -H "User-Agent: my-client"
+
+# 3. Serve a file (must exist in the --directory path)
+curl http://localhost:4221/files/test.txt
+
+# 4. Upload a file
+curl -X POST http://localhost:4221/files/new.txt \
+     --data 'This is file content'
+
+---
+
 ## How to Run
 
 You’ll need **Rust** (`cargo 1.87+`) installed.

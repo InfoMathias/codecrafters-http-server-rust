@@ -41,16 +41,16 @@ The goal was to start from a bare TCP socket and gradually build a fully functio
 
 ## Example Usage
 
-# 1. Echo back text
+### 1. Echo back text
 curl http://localhost:4221/echo/hello
 
-# 2. Read the User-Agent header
+### 2. Read the User-Agent header
 curl http://localhost:4221/user-agent -H "User-Agent: my-client"
 
-# 3. Serve a file (must exist in the --directory path)
+### 3. Serve a file (must exist in the --directory path)
 curl http://localhost:4221/files/test.txt
 
-# 4. Upload a file
+### 4. Upload a file
 curl -X POST http://localhost:4221/files/new.txt \
      --data 'This is file content'
 

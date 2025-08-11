@@ -36,13 +36,11 @@ impl Router {
             _ => true,
         };
 
-        let response = format!(
-            "HTTP/1.1 {}\r\nContent-Length: {}\r\nConnection: {}\r\n\r\n{}",
-            status,
-            body.len(),
-            if keep_alive { "keep-alive" } else { "close" },
-            body
-        );
+        let response_headers = if keep_alive { "keep-alive" } else { "close" }
+
+        let response = format!("HTTP/1.1 {} {}", status.to_string(), body);
+
+        response.insert_str(response.find('\n').unwrap_or(response.len()), &headers_str);
 
         println!("{}", response);
 
